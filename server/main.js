@@ -11,6 +11,36 @@ const path = require("path")
 
 const agent = new ProxyAgent("http://139.59.1.14:3128");
 
+main.get("/download/file/:query", async (req, res) => {
+  const videoURL = req.params.query; // Get the video URL from the query parameter
+
+  if (!videoURL) {
+    return res.status(400).send("Please provide a valid YouTube video URL.");
+
+  }
+  const stream = ytdl(videoURL, {
+    quality: "highestaudio",
+    filter: "audioonly",
+    requestOptions: { agent },
+    highWaterMark: 1024 * 1024 * 3,
+  });
+  res.set("Content-Type", "audio/mpeg");
+  res.setHeader(
+    "Content-disposition",
+    `attachment; filename=ytomp3-${
+      Math.floor(Math.random() * 90000) + 10000
+    }.mp3`
+  );
+
+  stream.on("data", (chunk) => {
+    res.write(chunk);
+  });
+
+  stream.on("end", () => {
+    res.end();
+  });
+});
+
 main.get("/audio/search", (req, res) => {
   res.render("search");
 });
@@ -35,7 +65,7 @@ main.get("/audio/search/:q", async (req, res) => {
   };
   res.render("index", render);
 });
-var timeouts = []
+
 main.get("/stream/:id", async (req, res) => {  
   const videoURL = req.params.id;
   try {
