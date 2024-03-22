@@ -99,7 +99,7 @@ main.get("/stream/:id", async (req, res) => {
     
 
   } catch (error) {
-    // Handle the error, for example, send a response indicating that the video is not found
+    
     console.error('Error fetching video info:', error);
     res.status(404).send('Video not found or is no longer available');
   }}
