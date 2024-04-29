@@ -5,7 +5,8 @@ const ytdl = require("ytdl-core");
 const { client, handleDb } = require("./session");
 const { ProxyAgent } = require("proxy-agent");
 const ytsr = require("@citoyasha/yt-search");
-const ytsearch = require("yt-search");
+//const ytsearch = require("yt-search");
+const yturl = require("ytsr");
 const fs = require("fs")
 const path = require("path")
 
@@ -29,12 +30,44 @@ main.get("/audio/search/:q", async (req, res) => {
     var youtubeSearchData = await ytsr.search(q, 5).then(data=>data[0]);
   console.log(youtubeSearchData)
   } catch (error) {
-    res.status(500).write("server error due to unexpected search");
+  var result = await ytdl.validateURL(q)
+  
+  if(result){
+    const videoURL = q; // Get the video URL from the query parameter
+console.log(videoURL)
+  if (!videoURL ||videoURL=="undefined") {
+    return res.status(400).send("Please provide a valid YouTube video URL.");
+
+  }
+  const stream = ytdl(videoURL, {
+    quality: "highestaudio",
+    filter: "audioonly",
+    requestOptions: { agent },
+    highWaterMark: 1024 * 1024 * 3,
+  });
+  res.set("Content-Type", "audio/mpeg");
+  res.setHeader(
+    "Content-disposition",
+    `attachment; filename=ytomp3-${
+      Math.floor(Math.random() * 90000) + 10000
+    }.mp3`
+  );
+
+  stream.on("data", (chunk) => {
+    res.write(chunk);
+  });
+
+  stream.on("end", () => {
     res.end();
-    axios.get("https://ytomp3updaterapi.cyclic.app/api/update/"+q)
+  });
+
+  }
+    //res.status(500).write("server error due to unexpected search  code:101"+error);
+    //res.end();
+    //axios.get("https://ytomp3updaterapi.cyclic.app/api/update/"+encodeURI(q))
     return;
   }
- axios.get("https://ytomp3updaterapi.cyclic.app/api/update/"+q)
+ axios.get("https://ytomp3updaterapi.cyclic.app/api/update/"+encodeURI(q))
 
   if (!youtubeSearchData) {
     res.status(500).write("server error due to unexpected search");
