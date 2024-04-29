@@ -5,40 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ytomp3 - MP3 Song Downloader</title>
-
-    <!-- Add meta tags for SEO -->
-    <meta name="description"
-        content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
+    <meta name="description" content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
     <meta name="keywords" content="ytomp3, mp3 download, songs, music, download music, song downloader">
     <meta name="author" content="Your Name">
     <meta name="robots" content="index, follow">
-   
-    <!-- Open Graph meta tags for social sharing -->
     <meta property="og:title" content="ytomp3 - MP3 Song Downloader">
-    <meta property="og:description"
-        content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
-    <meta property="og:image" content="your-image-url.jpg"> <!-- Add an image URL for social sharing -->
+    <meta property="og:description" content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
+    <meta property="og:image" content="your-image-url.jpg">
     <meta property="og:url" content="https://ytomp3.onrender.com">
     <meta property="og:type" content="website">
-
-    <!-- Twitter Card meta tags for Twitter sharing -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@ytomp3">
     <meta name="twitter:title" content="ytomp3 - MP3 Song Downloader">
-    <meta name="twitter:description"
-        content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
-    <meta name="twitter:image" content="https://static.dezeen.com/uploads/2023/07/x-logo-twitter-elon-musk_dezeen_2364_col_0-1-852x479.jpg"> <!-- Add an image URL for Twitter sharing -->
-
+    <meta name="twitter:description" content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
+    <meta name="twitter:image" content="https://static.dezeen.com/uploads/2023/07/x-logo-twitter-elon-musk_dezeen_2364_col_0-1-852x479.jpg">
     <style>
         body {
             background-color: #f0f0f0;
-            /* Light gray background */
             text-align: center;
         }
 
         .container {
             background-color: #fff;
-            /* White background */
             border-radius: 10px;
             box-shadow: 0.1px 8px 8px 2px rgba(0, 0, 0, 0.2);
             padding: 20px;
@@ -60,58 +48,52 @@
 
         .search-bar button {
             background-color: #3498db;
-            /* Blue search button background color */
             color: #fff;
             border: none;
             border-radius: 5px;
             padding: 10px 20px;
             font-size: 16px;
-            
             cursor: pointer;
             transition: background-color 0.3s;
         }
 
         .search-bar button:hover {
             background-color: #1C2833;
-            /* Dark button background color on hover */
         }
 
         .site-description {
             margin-top: 20px;
             font-size: 18px;
             color: #333;
-            /* Dark text color */
         }
 
         @media screen and (max-width: 431px) {
             .search-bar input[type="text"] {
                 width: 80%;
             }
-
-            
         }
+
         .progress-box {
-    display: none;
-    background-color: #e8e8e8;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 20px;
-}
+            display: none;
+            background-color: #e8e8e8;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
 
-.progress-bar {
-    background-color: #3498db;
-    height: 20px;
-    border-radius: 5px;
-    width: 0%;
-}
-
+        .progress-bar {
+            background-color: #3498db;
+            height: 20px;
+            border-radius: 5px;
+            width: 0%;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Welcome to ytomp3</h1>
+        <h1>Download MP3 Songs with ytomp3 - Your Source for Music Downloads</h1>
         <div class="search-bar">
             <input id="searchInput" type="text" placeholder="Search for songs...">
             <button onclick="redirectToSearch()">Search</button>
@@ -124,42 +106,48 @@
             ytomp3 is your destination for downloading songs in MP3 format. Explore a vast collection of songs from
             various artists and genres.
         </p>
+        <p>
+            Welcome to ytomp3! We provide you with a seamless platform to download your favorite MP3 songs. Our extensive library covers a wide range of artists and genres, ensuring that you'll find the music you love. Simply use our search bar to find your desired songs, and let us handle the rest. With ytomp3, music downloading has never been easier.
+        </p>
     </div>
     <script>
-        document.querySelector("#searchInput").onkeypress=(e)=>{if(e.key=="Enter"){redirectToSearch()}}
+        document.querySelector("#searchInput").onkeypress = (e) => {
+            if (e.key == "Enter") {
+                redirectToSearch()
+            }
+        }
+
         function redirectToSearch() {
             startSearch()
             const searchInput = document.getElementById('searchInput').value;
             window.location.href = `/audio/search/${encodeURIComponent(searchInput)}`;
         }
+
         function startSearch() {
-    const searchInput = document.getElementById('searchInput').value;
-    const progressBox = document.getElementById('progressBox');
-    const progressBar = document.getElementById('progressBar');
-    const progressLabel = document.getElementById('progressLabel');
+            const searchInput = document.getElementById('searchInput').value;
+            const progressBox = document.getElementById('progressBox');
+            const progressBar = document.getElementById('progressBar');
+            const progressLabel = document.getElementById('progressLabel');
 
-    document.querySelector('.search-bar').style.display = 'none';
-    progressBox.style.display = 'block';
+            document.querySelector('.search-bar').style.display = 'none';
+            progressBox.style.display = 'block';
 
-    let progress = 0;
-    const interval = setInterval(() => {
-        progress += Math.random() * 20;
-        progressBar.style.width = `${Math.min(progress, 100)}%`;
-        progressLabel.textContent = `Converting and processing... (${Math.min(Math.round(progress), 100)}%)`;
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                progressBar.style.width = `${Math.min(progress, 100)}%`;
+                progressLabel.textContent = `Converting and processing... (${Math.min(Math.round(progress), 100)}%)`;
 
-        if (progress >= 100) {
-            clearInterval(interval);
-            progressBar.style.width = '100%';
-            progressLabel.textContent = `Converting and processing... (100%)`;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progressBar.style.width = '100%';
+                    progressLabel.textContent = `Converting and processing... (100%)`;
+                }
+            }, 1000);
         }
-    }, 1000);
-
-   
-}
-
     </script>
-    <script  type="text/javascript" src="https://udbaa.com/bnr.php?section=General&pub=882852&format=300x250&ga=g"></script>
-    <noscript ><a href="https://yllix.com/publishers/882852" target="_blank"><img src="//ylx-aff.advertica-cdn.com/pub/300x250.png" style="border:none;margin:0;padding:0;vertical-align:baseline;" alt="ylliX - Online Advertising Network" /></a></noscript>
+    <script type="text/javascript" src="https://udbaa.com/bnr.php?section=General&pub=882852&format=300x250&ga=g"></script>
+    <noscript><a href="https://yllix.com/publishers/882852" target="_blank"><img src="//ylx-aff.advertica-cdn.com/pub/300x250.png" style="border:none;margin:0;padding:0;vertical-align:baseline;" alt="ylliX - Online Advertising Network" /></a></noscript>
 </body>
 
 </html>
