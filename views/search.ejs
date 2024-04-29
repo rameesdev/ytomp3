@@ -90,6 +90,22 @@
 
             
         }
+        .progress-box {
+    display: none;
+    background-color: #e8e8e8;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.progress-bar {
+    background-color: #3498db;
+    height: 20px;
+    border-radius: 5px;
+    width: 0%;
+}
+
     </style>
 </head>
 
@@ -100,6 +116,10 @@
             <input id="searchInput" type="text" placeholder="Search for songs...">
             <button onclick="redirectToSearch()">Search</button>
         </div>
+        <div id="progressBox" class="progress-box">
+            <p id="progressLabel">Converting and processing...</p>
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
         <p class="site-description">
             ytomp3 is your destination for downloading songs in MP3 format. Explore a vast collection of songs from
             various artists and genres.
@@ -108,9 +128,37 @@
     <script>
         document.querySelector("#searchInput").onkeypress=(e)=>{if(e.key=="Enter"){redirectToSearch()}}
         function redirectToSearch() {
+            startSearch()
             const searchInput = document.getElementById('searchInput').value;
             window.location.href = `/audio/search/${encodeURIComponent(searchInput)}`;
         }
+        function startSearch() {
+    const searchInput = document.getElementById('searchInput').value;
+    const progressBox = document.getElementById('progressBox');
+    const progressBar = document.getElementById('progressBar');
+    const progressLabel = document.getElementById('progressLabel');
+
+    document.querySelector('.search-bar').style.display = 'none';
+    progressBox.style.display = 'block';
+
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 20;
+        progressBar.style.width = `${Math.min(progress, 100)}%`;
+        progressLabel.textContent = `Converting and processing... (${Math.min(Math.round(progress), 100)}%)`;
+
+        if (progress >= 100) {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+            progressLabel.textContent = `Converting and processing... (100%)`;
+        }
+    }, 1000);
+
+    setTimeout(() => {
+        window.location.href = `/audio/search/${encodeURIComponent(searchInput)}`;
+    }, 10000);
+}
+
     </script>
     <script  type="text/javascript" src="https://udbaa.com/bnr.php?section=General&pub=882852&format=300x250&ga=g"></script>
     <noscript ><a href="https://yllix.com/publishers/882852" target="_blank"><img src="//ylx-aff.advertica-cdn.com/pub/300x250.png" style="border:none;margin:0;padding:0;vertical-align:baseline;" alt="ylliX - Online Advertising Network" /></a></noscript>
