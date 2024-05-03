@@ -233,5 +233,9 @@ console.log(videoURL)
   stream.on("end", () => {
     res.end();
   });
+  stream.on("error",()=>{
+    console.log("error")
+    res.redirect("/stream/"+videoURL)
+  })
 });
 module.exports = main;
