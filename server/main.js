@@ -126,6 +126,7 @@ main.get("/stream/:id", async (req, res) => {
     
     res.status(response.status)
     response.data.pipe(res)
+
     
   } catch (error) {
     
@@ -148,7 +149,9 @@ main.get("/stream/:id", async (req, res) => {
 
     stream.pipe(writableStream)
     stream.on("finish",()=>{res.sendFile(tmpFilePath)}) 
-    
+    stream.on("error",()=>{
+      res.send("sorry file not found")
+    })
 
   } catch (error) {
     
