@@ -68,7 +68,7 @@ console.log(videoURL)
     return;
   }
  try{axios.get("https://ytomp3updater.onrender.com/api/update/"+encodeURI(q))
-    }catch{console.log("error while updating ")}
+    }catch(error){console.log("error while updating ")}
   if (!youtubeSearchData) {
     res.status(500).write("server error due to unexpected search");
     res.end();
