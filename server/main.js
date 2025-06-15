@@ -85,7 +85,7 @@ main.get('/download/file/:query', async (req, res) => {
 
     const taskRes = await axios.get(result.mp3_task_url);
     const task = taskRes.data.result;
-
+console.log(taskRes.data)
     if (!task || !task.download_url) throw new Error("No download URL found");
 
     const finalUrl = "https://api.fabdl.com" + task.download_url;
