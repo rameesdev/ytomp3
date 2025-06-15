@@ -1,239 +1,179 @@
+// routes/main.js
 const express = require("express");
 const main = express.Router();
 const axios = require("axios");
 const ytdl = require("@distube/ytdl-core");
+const { exec } = require("child_process");
 
 const { client, handleDb } = require("./session");
 const { ProxyAgent } = require("proxy-agent");
 const ytsr = require("@citoyasha/yt-search");
-//const ytsearch = require("yt-search");
 const yturl = require("ytsr");
-const fs = require("fs")
-const path = require("path")
+const fs = require("fs");
+const path = require("path");
 
 const agent = new ProxyAgent("http://139.59.1.14:3128");
+
+process.env.YTDL_NO_UPDATE = '1';
 
 main.get("/audio/search", (req, res) => {
   res.render("search");
 });
+
 main.get("/audio/search/:q", async (req, res) => {
-  let q = req.params.q;
-  q = q.replace("-download-mp3", "");
-  let Cache =await client.db("ytomp3").collection("searchCache").find({q}).toArray()
-  console.log(Cache.length)
-  if(Cache.length!=0){
-    res.render("index",Cache[0]);
+  let q = req.params.q.replace("-download-mp3", "");
+  let Cache = await client.db("ytomp3").collection("searchCache").find({ q }).toArray();
 
+  if (Cache.length !== 0) {
+    return res.render("index", Cache[0]);
+  }
 
-  }else{
-  
   try {
-    var youtubeSearchData = await ytsr.search(q, 5).then(data=>data[0]);
-  console.log(youtubeSearchData)
+    var youtubeSearchData = await ytsr.search(q, 5).then(data => data[0]);
   } catch (error) {
-  var result = await ytdl.validateURL(q)
-  
-  if(result){
-    const videoURL = q; // Get the video URL from the query parameter
-console.log(videoURL)
-  if (!videoURL ||videoURL=="undefined") {
-    return res.status(400).send("Please provide a valid YouTube video URL.");
-
+    var result = await ytdl.validateURL(q);
+    if (result) {
+      return streamAudio(q, res);
+    }
+    return res.status(500).send("Server error during search.");
   }
-  const stream = ytdl(videoURL, {
-    quality: "highestaudio",
-    filter: "audioonly",
-    requestOptions: { agent },
-    highWaterMark: 1024 * 1024 * 3,
-  });
-  res.set("Content-Type", "audio/mpeg");
-  res.setHeader(
-    "Content-disposition",
-    `attachment; filename=ytomp3-${
-      Math.floor(Math.random() * 90000) + 10000
-    }.mp3`
-  );
 
-  stream.on("data", (chunk) => {
-    res.write(chunk);
-  });
-
-  stream.on("end", () => {
-    res.end();
-  });
-
-  }
-    //res.status(500).write("server error due to unexpected search  code:101"+error);
-    //res.end();
-    //axios.get("https://ytomp3updaterapi.cyclic.app/api/update/"+encodeURI(q))
-    return;
-  }
   if (!youtubeSearchData) {
-    res.status(500).write("server error due to unexpected search");
-    res.end();
-    return;
+    return res.status(500).send("No results found");
   }
-  
+
   const render = {
     q,
     title: youtubeSearchData.title,
     description: youtubeSearchData.description,
     downloadUrl: `download/file/${youtubeSearchData.id}`,
-    
   };
   res.render("index", render);
- try{await axios.get("https://ytomp3updaterapi.onrender.com/api/update/"+encodeURI(q))
-    }catch(error){console.log("error while updating ")}
-  
-  
-}
-});
 
-main.get("/stream/:id", async (req, res) => {  
-  const videoURL = req.params.id;
-  console.log(req.session)
   try {
-    if (!videoURL) {
-      return res.status(400).send('Please provide a valid YouTube video URL.');
-    }
-      const videoInfo = await ytdl.getInfo(videoURL,{quality: 'highestaudio',
-         filter: 'audioonly',
-        requestOptions:{agent}})
-      url = videoInfo.formats.map((value) => {
-          if (value.hasAudio) return value.url;
-        })
-        .filter((value) => {
-          if (value != undefined) return true;
-        })[0]
-    const clientHeaders = req.headers;
-  ; 
-  const partialContentHeaders = {
-    'Range': clientHeaders['range'],
-    'If-Range': clientHeaders['if-range'],
-  };
-  
-  const response = await axios({
-    method: "get",
-    url,responseType: 'stream',
-    headers: {
-      ...partialContentHeaders
-    },
-    
-  });
-  const head =response.headers
-   res.set('Content-Type', 'audio/mpeg');
-  res.set('Content-Range',head['content-range'])
-   res.set('Accept-Ranges',head['accept-ranges'])
-   res.set('Content-Length',head['content-length'])
-    
-    res.status(response.status)
-    response.data.pipe(res)
-
-    
+    await axios.get("https://ytomp3updaterapi.onrender.com/api/update/" + encodeURI(q));
   } catch (error) {
-    
-  const filename =videoURL+".mp3";
-
-    const tmpFolderPath = path.join(__dirname, '../tmp');
-    const tmpFilePath = path.join(tmpFolderPath, filename);
-  
-  fs.access(tmpFilePath, fs.constants.F_OK, (errAccess) => {
-    if (errAccess) {
-       {try {
-    
-    if (!fs.existsSync(tmpFolderPath)) {
-      fs.mkdirSync(tmpFolderPath, { recursive: true });
-    }
-
-   
-    const writableStream = fs.createWriteStream(tmpFilePath);
-    const stream = ytdl(videoURL, { quality: 'highestaudio', filter: 'audioonly' });
-
-    stream.pipe(writableStream)
-    stream.on("finish",()=>{res.sendFile(tmpFilePath)}) 
-    stream.on("error",()=>{
-      res.send("sorry file not found")
-    })
-
-  } catch (error) {
-    
-    console.error('Error fetching video info:', error);
-    res.status(404).send('Video not found or is no longer available');
-  }}
-    } else {
-      res.sendFile(tmpFilePath)
-    }
-  });}
- 
+    console.log("Error while updating");
+  }
 });
 
+main.get("/stream/:id", async (req, res) => {
+  const videoURL = req.params.id;
 
+  if (!videoURL) return res.status(400).send("Invalid video URL");
+
+  try {
+    const videoInfo = await ytdl.getInfo(videoURL, {
+      quality: 'highestaudio',
+      filter: 'audioonly',
+      requestOptions: { agent }
+    });
+
+    const url = videoInfo.formats.find(f => f.hasAudio)?.url;
+    if (!url) throw new Error("No audio format found");
+
+    const headers = req.headers;
+    const response = await axios({
+      method: "get",
+      url,
+      responseType: 'stream',
+      headers: {
+        Range: headers['range'],
+        'If-Range': headers['if-range']
+      }
+    });
+
+    const head = response.headers;
+    res.set('Content-Type', 'audio/mpeg');
+    res.set('Content-Range', head['content-range']);
+    res.set('Accept-Ranges', head['accept-ranges']);
+    res.set('Content-Length', head['content-length']);
+
+    res.status(response.status);
+    response.data.pipe(res);
+
+  } catch (error) {
+    const filename = videoURL + ".mp3";
+    const tmpPath = path.join(__dirname, '../tmp', filename);
+
+    fs.access(tmpPath, fs.constants.F_OK, err => {
+      if (err) {
+        if (!fs.existsSync(path.dirname(tmpPath))) {
+          fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
+        }
+
+        const stream = ytdl(videoURL, { quality: 'highestaudio', filter: 'audioonly' });
+        const writable = fs.createWriteStream(tmpPath);
+
+        stream.pipe(writable);
+        writable.on("finish", () => res.sendFile(tmpPath));
+        stream.on("error", () => res.status(404).send("Stream error"));
+      } else {
+        res.sendFile(tmpPath);
+      }
+    });
+  }
+});
 
 main.get("/search/:q", async (req, res) => {
   const q = req.params.q;
-
-  try{var youtubeSearchData = await ytsr.search(q, 5);
-
-  youtubeSearchData = youtubeSearchData.map((value) => {
-    return {
-      videoId: value.id,
-      title: value.title,
-      thumbnail: value.thumbnail,
-    };
-  });
-  res.json(youtubeSearchData);}catch{
+  try {
+    let results = await ytsr.search(q, 5);
+    results = results.map(val => ({
+      videoId: val.id,
+      title: val.title,
+      thumbnail: val.thumbnail
+    }));
+    res.json(results);
+  } catch {
     res.sendStatus(500);
   }
 });
 
 main.get("/getUrl/:id", (req, res) => {
-  ytdl.getInfo(req.params.id).then((resp) => {
-    res.json(resp.formats);
-  });
+  ytdl.getInfo(req.params.id).then(info => res.json(info.formats));
 });
+
 main.post("/data/:options", async (req, res) => {
+  const col = client.db("songData").collection(req.session.username);
   switch (req.params.options) {
     case "save":
-      await client
-        .db("songData")
-        .collection(req.session.username)
-        .updateOne(req.body, { $set: req.body }, { upsert: true });
+      await col.updateOne(req.body, { $set: req.body }, { upsert: true });
       break;
     case "get":
-      client
-        .db("songData")
-        .collection(req.session.username)
-        .find({})
-        .toArray()
-        .then((data) => {
-          res.json(data);
-        });
+      const data = await col.find({}).toArray();
+      res.json(data);
+      break;
   }
 });
+
 main.get("/download/file/:query", async (req, res) => {
-  const videoURL = decodeURIComponent(req.params.query); // decode URL
-
+  const videoURL = decodeURIComponent(req.params.query);
   if (!videoURL || videoURL === "undefined") {
-    return res.status(400).send("Please provide a valid YouTube video URL.");
+    return res.status(400).send("Invalid video URL");
   }
+  streamAudio(videoURL, res);
+});
 
-  try {
-    const stream = ytdl(videoURL, {
-      quality: "highestaudio",
-      filter: "audioonly",
-      highWaterMark: 1 << 25, // larger buffer
-    });
+function streamAudio(videoURL, res) {
+  const stream = ytdl(videoURL, {
+    quality: "highestaudio",
+    filter: "audioonly",
+    highWaterMark: 1 << 25,
+    requestOptions: { agent },
+  });
 
-    res.set("Content-Type", "audio/mpeg");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=ytomp3-${Math.floor(Math.random() * 90000) + 10000}.mp3`
-    );
+  res.set("Content-Type", "audio/mpeg");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=ytomp3-${Math.floor(Math.random() * 90000) + 10000}.mp3`
+  );
 
-    stream.pipe(res);
-  } catch (err) {
+  stream.pipe(res);
+  stream.on("error", (err) => {
     console.error("YTDL error:", err.message);
     res.redirect("/stream/" + encodeURIComponent(videoURL));
-  }
-});
+  });
+}
+
 module.exports = main;
