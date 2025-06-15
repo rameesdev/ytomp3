@@ -15,7 +15,9 @@ process.env.YTDL_NO_UPDATE = '1';
 // Load proxy list from http.txt
 const proxyList = fs.readFileSync(path.join(__dirname, 'http.txt'), 'utf8')
   .split(/\r?\n/)
-  .filter(Boolean);
+  .filter(Boolean)
+  .map(p => (p.startsWith('http://') || p.startsWith('https://') ? p : 'http://' + p));
+
 
 function getRandomProxyAgent() {
   const proxy = proxyList[Math.floor(Math.random() * proxyList.length)];
