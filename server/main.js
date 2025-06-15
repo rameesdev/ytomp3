@@ -6,54 +6,9 @@ const fs = require('fs');
 const path = require('path');
 const { client } = require('./session');
 const ytsr = require('@citoyasha/yt-search');
-const { createProxyAgent } = require('@distube/ytdl-core');
 
 // Disable ytdl-core update check
 process.env.YTDL_NO_UPDATE = '1';
-
-// Load proxy list from http.txt or environment variable
-let proxyList = [];
-try {
-  const proxyFilePath = path.join(__dirname, 'http.txt');
-  if (process.env.PROXY_LIST) {
-    proxyList = process.env.PROXY_LIST.split(',')
-      .map(p => p.trim())
-      .filter(Boolean)
-      .map(p => (p.startsWith('http://') || p.startsWith('https://') ? p : 'http://' + p));
-  } else if (fs.existsSync(proxyFilePath)) {
-    proxyList = fs.readFileSync(proxyFilePath, 'utf8')
-      .split(/\r?\n/)
-      .filter(Boolean)
-      .map(p => (p.startsWith('http://') || p.startsWith('https://') ? p : 'http://' + p));
-  }
-} catch (err) {
-  console.warn('Failed to load proxies:', err.message);
-}
-
-function getRandomProxyAgent() {
-  if (proxyList.length === 0) {
-    console.warn('No proxies available, using direct connection');
-    return null;
-  }
-  const proxy = proxyList[Math.floor(Math.random() * proxyList.length)];
-  console.log('Selected proxy:', proxy);
-  return createProxyAgent({ uri: proxy });
-}
-
-async function withProxyRetry(fn, retries = 3) {
-  let error;
-  for (let i = 0; i < retries; i++) {
-    const client = getRandomProxyAgent();
-    try {
-      return await fn(client || {});
-    } catch (err) {
-      error = err;
-      console.warn(`Proxy attempt ${i + 1} failed: ${err.message}, Proxy: ${client?.uri || 'none'}`);
-    }
-  }
-  console.error('All proxy attempts failed:', error);
-  throw error;
-}
 
 main.get('/audio/search', (req, res) => {
   res.render('search');
@@ -91,15 +46,17 @@ main.get('/stream/:id', async (req, res) => {
   if (!videoURL) return res.status(400).send('Invalid video URL');
 
   try {
-    const info = await withProxyRetry((client) =>
-      ytdl.getInfo(videoURL, {
-        quality: 'highestaudio',
-        filter: 'audioonly',
-        requestOptions: { client, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } },
-      })
-    );
+    const info = await ytdl.getInfo(videoURL, {
+      quality: 'highestaudio',
+      filter: 'audioonly',
+      requestOptions: {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        }
+      }
+    });
 
-    const streamUrl = info.formats.find(f => f.hasAudio)?.url;
+    const streamUrl = info.formats.find(f => f.hasAudio && f.mimeType.includes('audio'))?.url;
     if (!streamUrl) throw new Error('No audio stream available');
 
     const headers = req.headers;
@@ -108,35 +65,45 @@ main.get('/stream/:id', async (req, res) => {
       headers: {
         Range: headers['range'],
         'If-Range': headers['if-range'],
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0',
       },
       timeout: 30000,
     });
 
     for (const [key, value] of Object.entries(response.headers)) {
-      res.set(key, value);
+      res.setHeader(key, value);
     }
+
     res.status(response.status);
     response.data.pipe(res);
+
   } catch (err) {
     console.error('Stream error:', err.message);
     const fileName = videoURL + '.mp3';
     const tmpPath = path.join(__dirname, '../tmp', fileName);
+
     if (!fs.existsSync(tmpPath)) {
-      if (!fs.existsSync(path.dirname(tmpPath))) fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
+      fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
 
       const stream = ytdl(videoURL, {
         quality: 'highestaudio',
         filter: 'audioonly',
-        requestOptions: { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } },
+        highWaterMark: 1 << 25,
+        requestOptions: {
+          headers: {
+            'User-Agent': 'Mozilla/5.0'
+          }
+        }
       });
+
       const writable = fs.createWriteStream(tmpPath);
       stream.pipe(writable);
       writable.on('finish', () => res.sendFile(tmpPath));
       stream.on('error', (err) => {
-        console.error('File stream error:', err);
+        console.error('File stream error:', err.message);
         res.status(404).send('Stream error');
       });
+
     } else {
       res.sendFile(tmpPath);
     }
@@ -161,7 +128,11 @@ main.get('/search/:q', async (req, res) => {
 main.get('/getUrl/:id', async (req, res) => {
   try {
     const info = await ytdl.getInfo(req.params.id, {
-      requestOptions: { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } },
+      requestOptions: {
+        headers: {
+          'User-Agent': 'Mozilla/5.0'
+        }
+      }
     });
     res.json(info.formats);
   } catch (err) {
@@ -207,7 +178,7 @@ main.get('/download/file/:query', async (req, res) => {
     const stream = ytdl(fullURL, {
       quality: 'highestaudio',
       filter: 'audioonly',
-      highWaterMark: 1 << 25, // 32 MB buffer
+      highWaterMark: 1 << 25,
       requestOptions: {
         headers: {
           'User-Agent': 'Mozilla/5.0',
@@ -221,7 +192,7 @@ main.get('/download/file/:query', async (req, res) => {
     stream.pipe(res);
     stream.on('error', (err) => {
       console.error('ytdl stream error:', err.message);
-      res.redirect("/stream/"+videoID)
+      res.redirect("/stream/" + videoID);
     });
 
   } catch (err) {

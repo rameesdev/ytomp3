@@ -8,3 +8,5 @@ server.js
 .env
 scraper
 test
+base.txt
+base.js
