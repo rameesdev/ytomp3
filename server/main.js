@@ -185,53 +185,49 @@ main.post('/data/:options', async (req, res) => {
 });
 
 main.get('/download/file/:query', async (req, res) => {
-  const videoURL = decodeURIComponent(req.params.query);
-  if (!videoURL || videoURL === 'undefined') {
-    console.error('Invalid video URL:', videoURL);
+  const videoID = decodeURIComponent(req.params.query);
+  if (!videoID || videoID === 'undefined') {
+    console.error('Invalid video URL:', videoID);
     return res.status(400).send('Invalid video URL');
   }
-  streamAudio(videoURL, res);
-});
 
-async function streamAudio(videoURL, res) {
   try {
-    const isValid = await ytdl.validateURL(videoURL) || await ytdl.validateID(videoURL);
+    const fullURL = ytdl.validateURL(videoID)
+      ? videoID
+      : `https://www.youtube.com/watch?v=${videoID}`;
+
+    const isValid = await ytdl.validateURL(fullURL);
     if (!isValid) {
-      console.error('Invalid video URL or ID:', videoURL);
-      return res.status(400).send('Invalid video URL or ID');
+      console.error('Invalid video URL');
+      return res.status(400).send('Invalid video URL');
     }
 
-    // Convert video ID to full URL if necessary
-    const fullURL = ytdl.validateURL(videoURL)
-      ? videoURL
-      : `https://www.youtube.com/watch?v=${videoURL}`;
+    const fileName = `ytomp3-${Math.floor(Math.random() * 90000) + 10000}.mp3`;
 
     const stream = ytdl(fullURL, {
       quality: 'highestaudio',
       filter: 'audioonly',
-      highWaterMark: 1 << 25,
+      highWaterMark: 1 << 25, // 32 MB buffer
       requestOptions: {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0',
         },
       },
     });
 
-    res.set('Content-Type', 'audio/mpeg');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=ytomp3-${Math.floor(Math.random() * 90000) + 10000}.mp3`
-    );
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'audio/mpeg');
 
     stream.pipe(res);
     stream.on('error', (err) => {
-      console.error('Stream error:', err);
-      res.status(500).send('Streaming error');
+      console.error('ytdl stream error:', err.message);
+      res.redirect("/stream/"+videoID)
     });
+
   } catch (err) {
-    console.error('Stream setup error:', err);
-    res.status(500).send('Streaming failed');
+    console.error('Download error:', err.message);
+    res.status(500).send('Download failed');
   }
-}
+});
 
 module.exports = main;
