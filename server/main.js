@@ -13,7 +13,32 @@ process.env.YTDL_NO_UPDATE = '1';
 main.get('/audio/search', (req, res) => {
   res.render('search');
 });
+main.get('/audio/:q', async (req, res) => {
+  let q = req.params.q.replace('-download-mp3', '');
+  let Cache = await client.db('ytomp3').collection('searchCache').find({ q }).toArray();
 
+  if (Cache.length !== 0) return res.render('index', Cache[0]);
+
+  try {
+    const youtubeSearchData = await ytsr.search(q, 5).then(data => data[0]);
+    if (!youtubeSearchData) throw new Error('No results');
+
+    const render = {
+      q,
+      title: youtubeSearchData.title,
+      description: youtubeSearchData.description,
+      downloadUrl: `download/file/${youtubeSearchData.id}`,
+    };
+
+    res.render('index', render);
+    axios.get('https://ytomp3updaterapi.onrender.com/api/update/' + encodeURIComponent(q)).catch(() => {});
+  } catch (error) {
+    console.error('Search error:', error.message);
+    const isValid = await ytdl.validateURL(q);
+    if (isValid) return streamAudio(q, res);
+    res.status(500).send('Search failed.');
+  }
+});
 main.get('/audio/search/:q', async (req, res) => {
   let q = req.params.q.replace('-download-mp3', '');
   let Cache = await client.db('ytomp3').collection('searchCache').find({ q }).toArray();
