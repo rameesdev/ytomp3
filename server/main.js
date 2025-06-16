@@ -65,64 +65,75 @@ main.get('/audio/search/:q', async (req, res) => {
     res.status(500).send('Search failed.');
   }
 });
+
 main.get('/stream/:id', async (req, res) => {
-  const videoID = decodeURIComponent(req.params.id);
-  if (!videoID || videoID === 'undefined') {
-    console.error('Invalid video ID:', videoID);
-    return res.status(400).send('Invalid video ID');
-  }
+  const videoURL = req.params.id;
+  if (!videoURL) return res.status(400).send('Invalid video URL');
 
   try {
-    // 🔄 Call the external MP3 API
-    const response = await axios.post('https://cnvmp3.com/check_database.php', {
-      youtube_id: videoID,
-      quality: 4,
-      formatValue: 1
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
+    const info = await ytdl.getInfo(videoURL, {
+      quality: 'highestaudio',
+      filter: 'audioonly',
+      requestOptions: {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        }
       }
     });
 
-    const { success, data } = response.data;
+    const streamUrl = info.formats.find(f => f.hasAudio && f.mimeType.includes('audio'))?.url;
+    if (!streamUrl) throw new Error('No audio stream available');
 
-    if (!success || !data?.server_path) {
-      return res.status(404).send('MP3 not available for this video');
-    }
-
-    const downloadUrl = encodeURI(data.server_path);
     const headers = req.headers;
-
-    // 📤 Stream MP3 directly to client with range support
-    const stream = await axios.get(downloadUrl, {
+    const response = await axios.get(streamUrl, {
       responseType: 'stream',
       headers: {
         Range: headers['range'],
         'If-Range': headers['if-range'],
-        'Referer': 'https://cnvmp3.com/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/137.0.0.0 Safari/537.36',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept': '*/*',
-        'Connection': 'keep-alive',
+        'User-Agent': 'Mozilla/5.0',
       },
       timeout: 30000,
     });
 
-    // Pass headers to client
-    for (const [key, value] of Object.entries(stream.headers)) {
+    for (const [key, value] of Object.entries(response.headers)) {
       res.setHeader(key, value);
     }
 
-    res.status(stream.status);
-    stream.data.pipe(res);
+    res.status(response.status);
+    response.data.pipe(res);
 
   } catch (err) {
-    console.error('Stream API error:', err.message);
-    res.status(500).send('Failed to stream MP3');
+    console.error('Stream error:', err.message); 
+    const fileName = videoURL + '.mp3';
+    const tmpPath = path.join(__dirname, '../tmp', fileName);
+
+    if (!fs.existsSync(tmpPath)) {
+      fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
+
+      const stream = ytdl(videoURL, {
+        quality: 'highestaudio',
+        filter: 'audioonly',
+        highWaterMark: 1 << 25,
+        requestOptions: {
+          headers: {
+            'User-Agent': 'Mozilla/5.0'
+          }
+        }
+      });
+
+      const writable = fs.createWriteStream(tmpPath);
+      stream.pipe(writable);
+      writable.on('finish', () => res.sendFile(tmpPath));
+      stream.on('error', (err) => {
+        console.error('File stream error:', err.message);
+        res.status(404).send('Stream error');
+      });
+
+    } else {
+      res.sendFile(tmpPath);
+    }
   }
 });
-
-
 
 main.get('/search/:q', async (req, res) => {
   try {

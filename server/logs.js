@@ -1,25 +1,34 @@
 const { WebSocketServer } = require("ws");
-
 const { client } = require("./session");
+const log = require("express").Router();
 
-const log = require("express").Router()
-log.use((req,res,next)=>{
-    if(req.path!="/status"){const logObj = {
-        username:req.session?req.session.username:"NA",
-        ipaddress:(req.ip=='::1')?(req.headers["x-forwarded-for"] || '').split(',')[0].trim():req.ip||req.connection.remoteAddress,
-        path:decodeURIComponent(req.path),
-        timestamp:(new Date()).toISOString(),
-        referer:req.get("referer")?req.get("referer"):"/"
+log.use((req, res, next) => {
+    const path = decodeURIComponent(req.path);
+
+    // Only log /audio/:query and /audio/search/:query
+    const matchAudio = /^\/audio\/[^/]+$|^\/audio\/search\/[^/]+$/;
+    if (!matchAudio.test(path)) {
+        return next();
     }
-    filter = ["3.134.238.10","3.129.111.220","52.15.118.168","34.82.13.157"]
-    if(filter.includes(logObj.ipaddress)){
-        next();
-        return;
+
+    const logObj = {
+        username: req.session ? req.session.username : "NA",
+        ipaddress: (req.ip === '::1')
+            ? (req.headers["x-forwarded-for"] || '').split(',')[0].trim()
+            : req.ip || req.connection.remoteAddress,
+        path: path,
+        timestamp: (new Date()).toISOString(),
+        referer: req.get("referer") || "/"
+    };
+
+    const filter = ["3.134.238.10", "3.129.111.220", "52.15.118.168", "34.82.13.157"];
+    if (!filter.includes(logObj.ipaddress)) {
+        client.db("ytomp3").collection("logs").insertOne(logObj);
     }
-    client.db("ytomp3").collection("logs").insertOne(logObj)
-    }
+
     next();
-})
+});
+
 log.get("/status",(req,res)=>{
     res.sendStatus(200)
 })
