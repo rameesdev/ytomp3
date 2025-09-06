@@ -2,131 +2,229 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ytomp3 - MP3 Song Downloader</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ytomp3 - Free MP3 Song Downloader & YouTube to MP3 Converter</title>
 
-    <!-- Add meta tags for SEO -->
-<link rel="canonical" href="https://ytomp3.onrender.com/audio/search" />
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://ytomp3.onrender.com/audio/search" />
 
-    <meta name="description"
-        content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
-    <meta name="keywords" content="ytomp3, mp3 download, songs, music, download music, song downloader">
-    <meta name="author" content="Your Name">
-    <meta name="robots" content="index, follow">
-   
-    <!-- Open Graph meta tags for social sharing -->
-    <meta property="og:title" content="ytomp3 - MP3 Song Downloader">
-    <meta property="og:description"
-        content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
-    <meta property="og:image" content="your-image-url.jpg"> <!-- Add an image URL for social sharing -->
-    <meta property="og:url" content="https://ytomp3.onrender.com">
-    <meta property="og:type" content="website">
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="ytomp3 is the best free MP3 downloader and YouTube to MP3 converter. Search and download unlimited songs online in high quality from various artists and genres.">
+  <meta name="keywords" content="ytomp3, mp3 downloader, free music, youtube to mp3, mp3 songs, download music online, mp3 converter, music download site">
+  <meta name="author" content="ytomp3">
+  <meta name="robots" content="index, follow">
 
-    <!-- Twitter Card meta tags for Twitter sharing -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@ytomp3">
-    <meta name="twitter:title" content="ytomp3 - MP3 Song Downloader">
-    <meta name="twitter:description"
-        content="ytomp3 is your source for downloading songs in MP3 format. Explore a vast collection of songs from various artists and genres.">
-    <meta name="twitter:image" content="https://static.dezeen.com/uploads/2023/07/x-logo-twitter-elon-musk_dezeen_2364_col_0-1-852x479.jpg"> <!-- Add an image URL for Twitter sharing -->
+  <!-- Open Graph -->
+  <meta property="og:title" content="ytomp3 - Free MP3 Downloader & Converter">
+  <meta property="og:description" content="Download free MP3 songs online with ytomp3. Convert YouTube videos to MP3 instantly.">
+  <meta property="og:image" content="https://ytomp3.onrender.com/static/ytomp3-banner.jpg">
+  <meta property="og:url" content="https://ytomp3.onrender.com">
+  <meta property="og:type" content="website">
 
-    <style>
-        body {
-            background-color: #f0f0f0;
-            /* Light gray background */
-            text-align: center;
-        }
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@ytomp3">
+  <meta name="twitter:title" content="ytomp3 - Free MP3 Downloader & Converter">
+  <meta name="twitter:description" content="Convert YouTube videos to MP3 instantly and download free songs.">
+  <meta name="twitter:image" content="https://ytomp3.onrender.com/static/ytomp3-banner.jpg">
 
-        .container {
-            background-color: #fff;
-            /* White background */
-            border-radius: 10px;
-            box-shadow: 0.1px 8px 8px 2px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            margin: 20px;
-            text-align: center;
-        }
+  <!-- Structured Data (Schema.org for Music Website) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ytomp3",
+    "url": "https://ytomp3.onrender.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://ytomp3.onrender.com/audio/search/{search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 
-        .search-bar {
-            margin-top: 20px;
-        }
+  <style>
+    body {
+      background-color: #f0f0f0;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
 
-        .search-bar input[type="text"] {
-            width: 300px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
+    .container {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 20px auto;
+      max-width: 800px;
+      text-align: center;
+    }
 
-        .search-bar button {
-            background-color: #3498db;
-            /* Blue search button background color */
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    h1 {
+      color: #2c3e50;
+    }
 
-        .search-bar button:hover {
-            background-color: #1C2833;
-            /* Dark button background color on hover */
-        }
+    h2 {
+      margin-top: 30px;
+      color: #34495e;
+    }
 
-        .site-description {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #333;
-            /* Dark text color */
-        }
+    .search-bar {
+      margin-top: 20px;
+    }
 
-        @media screen and (max-width: 431px) {
-            .search-bar input[type="text"] {
-                width: 80%;
-            }
+    .search-bar input[type="text"] {
+      width: 70%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
 
-            
-        }
-    </style>
+    .search-bar button {
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 12px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-left: 5px;
+    }
+
+    .search-bar button:hover {
+      background-color: #1C2833;
+    }
+
+    .features, .faq, .trending {
+      text-align: left;
+      margin-top: 20px;
+    }
+
+    .features ul, .trending ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .features li, .trending li {
+      margin: 10px 0;
+      padding-left: 25px;
+      position: relative;
+    }
+
+    .features li::before {
+      content: "✔";
+      color: #27ae60;
+      position: absolute;
+      left: 0;
+    }
+
+    .trending li::before {
+      content: "♪";
+      color: #3498db;
+      position: absolute;
+      left: 0;
+    }
+
+    .faq h3 {
+      margin-top: 15px;
+    }
+
+    .highlight {
+      background: #eaf6ff;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    @media screen and (max-width: 480px) {
+      .search-bar input[type="text"] {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .search-bar button {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Welcome to ytomp3</h1>
-        <div class="search-bar">
-            <input id="searchInput" type="text" placeholder="Search for songs...">
-            <button onclick="redirectToSearch()">Search</button>
-        </div>
-        <br>
-        <br>
-        
+  <div class="container">
+    <h1>ytomp3 - Free MP3 Downloader & YouTube to MP3 Converter</h1>
+    <p class="site-description">
+      🎶 Discover, convert, and enjoy music anywhere! With <strong>ytomp3</strong>, you can instantly search and download your favorite songs in MP3 format from YouTube and more.
+    </p>
 
-        <p class="site-description">
-            ytomp3 is your destination for downloading songs in MP3 format. Explore a vast collection of songs from
-            various artists and genres.
-        </p>
-       
+    <div class="search-bar">
+      <input id="searchInput" type="text" placeholder="Search for songs, artists, or albums...">
+      <button onclick="redirectToSearch()">Search</button>
     </div>
-    <script>
-        document.querySelector("#searchInput").onkeypress=(e)=>{if(e.key=="Enter"){redirectToSearch()}}
-        function redirectToSearch() {
-            const searchInput = document.getElementById('searchInput').value;
-            window.location.href = `/audio/search/${encodeURIComponent(searchInput)}`;
-        }
-    </script>
-<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
-<script type="text/javascript">
-    aclib.runAutoTag({
-        zoneId: 'mykzljvwmv',
-    });
-</script>
 
+    <div class="highlight">🔥 Trending Now: Explore the most searched songs this week!</div>
 
-    </body>
+    <h2>Why Choose ytomp3?</h2>
+    <div class="features">
+      <ul>
+        <li>Free unlimited MP3 downloads.</li>
+        <li>Convert YouTube videos to MP3 instantly.</li>
+        <li>High-quality 320kbps audio supported.</li>
+        <li>No registration or installation required.</li>
+        <li>Works on mobile, tablet, and desktop.</li>
+      </ul>
+    </div>
 
+    <h2>Trending Songs</h2>
+    <div class="trending">
+      <ul>
+        <li><a href="/audio/search/Calm Down Rema">Calm Down - Rema</a></li>
+        <li><a href="/audio/search/Shape of You Ed Sheeran">Shape of You - Ed Sheeran</a></li>
+        <li><a href="/audio/search/Kesariya">Kesariya - Arijit Singh</a></li>
+        <li><a href="/audio/search/Blinding Lights The Weeknd">Blinding Lights - The Weeknd</a></li>
+      </ul>
+    </div>
+
+    <h2>Frequently Asked Questions (FAQ)</h2>
+    <div class="faq">
+      <h3>Is ytomp3 free to use?</h3>
+      <p>Yes, ytomp3 is completely free and does not require sign-up.</p>
+
+      <h3>Can I use ytomp3 on mobile?</h3>
+      <p>Absolutely! Our website is fully mobile-friendly and works on all devices.</p>
+
+      <h3>Is it safe to download MP3 files?</h3>
+      <p>Yes, all downloads are processed securely. Avoid third-party pop-ups and only use our search/download buttons.</p>
+    </div>
+
+    <h2>Popular Searches</h2>
+    <p><a href="/audio/search/Arijit Singh">Arijit Singh Songs</a> | 
+       <a href="/audio/search/Justin Bieber">Justin Bieber</a> | 
+       <a href="/audio/search/Taylor Swift">Taylor Swift</a> | 
+       <a href="/audio/search/Coldplay">Coldplay</a></p>
+
+    <footer style="margin-top:30px; font-size:14px; color:#777;">
+      <p>Disclaimer: ytomp3 is a free online MP3 downloader tool. Use it responsibly and only for personal use.</p>
+    </footer>
+  </div>
+
+  <script>
+    document.querySelector("#searchInput").onkeypress = (e) => {
+      if (e.key === "Enter") {
+        redirectToSearch()
+      }
+    }
+    function redirectToSearch() {
+      const searchInput = document.getElementById('searchInput').value.trim();
+      if (searchInput) {
+        window.location.href = `/audio/search/${encodeURIComponent(searchInput)}`;
+      }
+    }
+  </script>
+  <script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+</body>
 </html>
