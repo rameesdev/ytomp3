@@ -3,10 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Explore and download the <%= title %> MP3 song by our music platform. Enjoy the audio and discover more about the artist and song details.">
-    <meta name="keywords" content="<%= title %> MP3 download, artist song, music, audio, genre, download">
+    <meta name="description" content="Download <%= title %> in high-quality MP3 format. Listen to this amazing track before downloading and explore similar songs on our music platform.">
+    <meta name="keywords" content="<%= title %>, MP3 download, free music, audio streaming, music platform, download songs">
     <meta name="author" content="YTOMP3">
-    <title><%= title %></title>
+    <title>Download <%= title %> MP3 - High Quality Music | YTOMP3</title>
+    
+    <!-- Schema.org markup for Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MusicRecording",
+      "name": "<%= title %>",
+      "description": "<%= description %>",
+      "url": "https://yourdomain.com/<%= downloadUrl %>",
+      "genre": "Music",
+      "audio": {
+        "@type": "AudioObject",
+        "contentUrl": "https://yourdomain.com/<%= downloadUrl %>",
+        "encodingFormat": "audio/mpeg"
+      }
+    }
+    </script>
  
     <style>
         body {
@@ -18,7 +35,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-           
+            line-height: 1.6;
         }
 
         .song-container {
@@ -30,17 +47,20 @@
             color: #333;
             max-width: 600px;
             width: 100%;
+            margin: 20px;
         }
 
         .song-title {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             margin-bottom: 10px;
+            color: #125382;
         }
 
         .song-description {
             font-size: 16px;
             margin-top: 20px;
+            color: #555;
         }
 
         .custom-audio-player {
@@ -109,7 +129,42 @@
             margin-top: 20px;
             font-style: italic;
             color: #555;
+            font-size: 14px;
         }
+        
+        .breadcrumb {
+            align-self: flex-start;
+            margin: 10px 0 0 20px;
+            font-size: 14px;
+        }
+        
+        .breadcrumb a {
+            color: #125382;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .seo-content {
+            max-width: 600px;
+            margin: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .seo-content h2 {
+            color: #125382;
+            margin-top: 0;
+        }
+        
+        .seo-content p {
+            color: #555;
+        }
+        
         .show {
           font-family: 'Arial', sans-serif;
           background-color: #f4f4f4;
@@ -119,6 +174,7 @@
           flex-wrap: wrap;
           justify-content: center;
         }
+        
         .song-container-show {
           width: 200px;
           margin: 10px;
@@ -130,17 +186,21 @@
           cursor: pointer;
           position: relative;
         }
+        
         .song-container-show:hover {
           transform: scale(1.05);
         }
+        
         .song-thumbnail-show {
           width: 100%;
           height: 150px;
           object-fit: cover;
         }
+        
         .song-info-show {
           padding: 10px;
         }
+        
         .song-title-show {
           font-weight: bold;
           margin-bottom: 5px;
@@ -149,6 +209,7 @@
           white-space: nowrap;
           width: 100%;
         }
+        
         .song-container-show:hover .song-title-show {
           white-space: normal;
           overflow: visible;
@@ -162,6 +223,7 @@
           border-radius: 8px;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        
         .song-description-show {
           font-size: 12px;
           color: #777;
@@ -171,6 +233,7 @@
           width: 100%;
           transition: all 0.3s ease-in-out;
         }
+        
         .song-container-show:hover .song-description-show {
           white-space: normal;
           overflow: visible;
@@ -183,6 +246,7 @@
           padding: 10px;
           border-radius: 0 0 8px 8px;
         }
+        
         .song-container-show .song-description-show a {
           text-decoration: none;
           color: inherit;
@@ -190,29 +254,57 @@
     </style>
 </head>
 <body>
+    <!-- Breadcrumb navigation for better SEO -->
+    <div class="breadcrumb">
+        <a href="/">Home</a> &gt; <a href="/audio/search">Search</a> &gt; <span><%= title %></span>
+    </div>
+    
     <div class="song-container">
-        <div class="song-title"><%= title %></div>
+        <h1 class="song-title"><%= title %></h1>
         <div class="song-description"><%= description %></div>
+        
         <div class="custom-audio-player">
             <audio id="custom-audio" preload="none">
                 <source src="/<%= downloadUrl %>" type="audio/mpeg">
-                Keywords: <%= title %> mp3 download, song, artist, music, genre  
+                Your browser does not support the audio element.
             </audio>
             <div class="audio-controls">
-                <button id="play-pause-button" class="play">Play</button>
+                <button id="play-pause-button" class="play">Play Song</button>
+                <label for="volume-slider">Volume:</label>
                 <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
             </div>
-
         </div>
 
-       <br> <a class="download-link" href="/<%= downloadUrl %>">Download mp3</a>
-        <a class="search-again-link" href="/audio/search">Search Again</a>
+        <a class="download-link" href="/<%= downloadUrl %>" download="<%= title %>.mp3">Download MP3</a>
+        <a class="search-again-link" href="/audio/search">Search More Music</a>
         <h4 id="download-status"></h4>
-        <div class="keywords">Keywords: <%= title %> mp3 download, song, artist, music, genre</div>
+        
+        <div class="keywords">
+            Related keywords: <%= title %> MP3 download, free music download, high quality audio, online music platform
+        </div>
     </div>
+    
+    <!-- SEO Content Section -->
+    <div class="seo-content">
+        <h2>About This Song</h2>
+        <p>Enjoy "<%= title %>" in high-quality MP3 format. Our platform provides free music downloads while ensuring excellent audio quality for your listening pleasure.</p>
+        
+        <h2>How to Download</h2>
+        <p>Simply click the "Download MP3" button above to save "<%= title %>" directly to your device. The download will start immediately, and you'll be able to enjoy this track offline anytime.</p>
+        
+        <h2>Music Quality</h2>
+        <p>All songs on our platform, including "<%= title %>", are available in high-quality MP3 format, ensuring you get the best listening experience whether you're using headphones, speakers, or in-car audio systems.</p>
+        
+        <h2>Legal Notice</h2>
+        <p>Please ensure you have the right to download and use this content according to applicable copyright laws in your region. Our platform respects intellectual property rights and encourages users to support artists by purchasing their music when possible.</p>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            document.querySelector(".download-link").onclick = () => { document.querySelector("#download-status").textContent = "Downloading started" }
+            document.querySelector(".download-link").onclick = () => { 
+                document.querySelector("#download-status").textContent = "Download started - enjoy your music!";
+            }
+            
             const audio = document.getElementById("custom-audio");
             const playPauseButton = document.getElementById("play-pause-button");
             const volumeSlider = document.getElementById("volume-slider");
@@ -220,10 +312,10 @@
             playPauseButton.addEventListener("click", function () {
                 if (audio.paused) {
                     audio.play();
-                    playPauseButton.innerText = "Pause";
+                    playPauseButton.innerText = "Pause Song";
                 } else {
                     audio.pause();
-                    playPauseButton.innerText = "Play";
+                    playPauseButton.innerText = "Play Song";
                 }
             });
 
@@ -238,21 +330,21 @@
             });
         });
     </script>
- <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4XM5Y83MEG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-4XM5Y83MEG');
-</script>
-<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
-<script type="text/javascript">
-    aclib.runAutoTag({
-        zoneId: 'mykzljvwmv',
-    });
-</script>
-
-   </body>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4XM5Y83MEG"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-4XM5Y83MEG');
+    </script>
+    
+    <script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+    <script type="text/javascript">
+        aclib.runAutoTag({
+            zoneId: 'mykzljvwmv',
+        });
+    </script>
+</body>
 </html>
